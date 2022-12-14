@@ -1,7 +1,9 @@
-from .models_alex import Comment, Review, Title
-from rest_framework.viewsets import ModelViewSet
-from .serializers_alex import CommentSerializer, ReviewSerializer
+# Django
 from django.shortcuts import get_object_or_404
+from rest_framework.viewsets import ModelViewSet
+
+from .models import Comment, Review, Title
+from .serializers import CommentSerializer, ReviewSerializer
 
 
 # http://127.0.0.1:8000/api/v1/titles/{title_id}/reviews/
