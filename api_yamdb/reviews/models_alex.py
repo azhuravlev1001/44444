@@ -12,18 +12,18 @@ class Review(Model):
         verbose_name='Текст отзыва',
         help_text='Введите текст отзыва'
     )
-    # title = ForeignKey(
-    #     Title,
-    #     verbose_name='Произведение',
-    #     help_text='Произведение, на которое оставляем отзыв',
-    #     on_delete=CASCADE
-    # )
-    # author = ForeignKey(
-    #     User,
-    #     on_delete=CASCADE,
-    #     verbose_name='Автор отзыва',
-    #     help_text='Автор отзыва'
-    # )
+    title = ForeignKey(
+        'Title',
+        verbose_name='Произведение',
+        help_text='Произведение, на которое оставляем отзыв',
+        on_delete=CASCADE
+    )
+    author = ForeignKey(
+        'User',
+        on_delete=CASCADE,
+        verbose_name='Автор отзыва',
+        help_text='Автор отзыва'
+    )
     score = PositiveSmallIntegerField(
         verbose_name='Оценка отзыва',
         help_text='Оценка отзыва, число от 1 до 10'
@@ -48,12 +48,12 @@ class Comment(Model):
         verbose_name='Комментарий',
         help_text='Комментарий к отзыву'
     )
-    # author = ForeignKey(
-    #     User,
-    #     on_delete=CASCADE,
-    #     verbose_name='Автор комментария',
-    #     help_text='Автор комментария'
-    # )
+    author = ForeignKey(
+        'User',
+        on_delete=CASCADE,
+        verbose_name='Автор комментария',
+        help_text='Автор комментария'
+    )
     text = TextField(
         verbose_name='Текст комментария',
         help_text='Введите текст комментария'
@@ -69,3 +69,23 @@ class Comment(Model):
 
     def __str__(self):
         return self.text[:STR_LENGTH]
+
+
+class OneTitleOneReview(Model):
+    user = ForeignKey(
+        'User',
+        on_delete=CASCADE,
+        verbose_name='Автор отзыва к произведению',
+    )
+    title = ForeignKey(
+        'Title',
+        verbose_name='Произведение',
+        on_delete=CASCADE
+    )
+
+    class Meta:
+        ordering = ['-user']
+        unique_together = ('user', 'title')
+
+    def __str__(self):
+        return self.user.username
