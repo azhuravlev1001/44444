@@ -1,9 +1,9 @@
 # Django
 from rest_framework.exceptions import ValidationError
 from rest_framework.relations import SlugRelatedField
-from rest_framework.serializers import CharField, ChoiceField, ModelSerializer
+from rest_framework.serializers import CharField, IntegerField, ChoiceField, ModelSerializer
 
-from .models import Comment, OneTitleOneReview, Review
+from .models import Comment, Review, Title
 
 
 class ReviewSerializer(ModelSerializer):
@@ -14,11 +14,9 @@ class ReviewSerializer(ModelSerializer):
     def validate(self, data):
         user = self.context['request'].user
         title = data['title']
-        if OneTitleOneReview.objects.filter(user=user, title=title):
+        if Review.objects.filter(author=user, title=title):
             raise ValidationError(
                 'Отзыв на это произведение уже есть'
-                # когда будет модель Title, сделать f-строку
-                # с указанием конкретного произведения
             )
         return data
 
@@ -34,3 +32,11 @@ class CommentSerializer(ModelSerializer):
     class Meta:
         model = Comment
         fields = '__all__'
+
+
+class TitleSerializer(ModelSerializer):
+    rating = IntegerField(source='get_rating', read_only=True)
+
+    class Meta:
+        model = Title
+        fields = ('name', 'year', 'description', 'genre', 'category', 'rating')
