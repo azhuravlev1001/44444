@@ -3,7 +3,6 @@ import csv
 from os.path import exists
 
 # Django
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
 
 from reviews import models
