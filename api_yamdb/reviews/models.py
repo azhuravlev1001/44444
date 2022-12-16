@@ -9,6 +9,7 @@ from django.db.models import (
     PositiveSmallIntegerField,
     TextField,
 )
+from django.db.models import Avg
 
 STR_LENGTH = 15
 
@@ -52,6 +53,10 @@ class Title(models.Model):
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True, related_name='titles'
     )
+
+    def get_rating(self):
+        rating = Review.objects.filter(title__name=self.name).aggregate(Avg('score'))['score__avg']
+        return round(rating)
 
     def __str__(self):
         return self.name
@@ -117,22 +122,6 @@ class Comment(Model):
 
     def __str__(self):
         return self.text[:STR_LENGTH]
-
-
-class OneTitleOneReview(Model):
-    user = ForeignKey(
-        User,
-        on_delete=CASCADE,
-        verbose_name='Автор отзыва к произведению',
-    )
-    title = ForeignKey('Title', verbose_name='Произведение', on_delete=CASCADE)
-
-    class Meta:
-        ordering = ['-user']
-        unique_together = ('user', 'title')
-
-    def __str__(self):
-        return self.user.username
 
 
 class TitleGenre(models.Model):
