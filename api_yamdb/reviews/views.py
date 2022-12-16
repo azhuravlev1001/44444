@@ -3,10 +3,9 @@ from django.shortcuts import get_object_or_404
 from rest_framework.viewsets import ModelViewSet
 
 from .models import Comment, Review, Title
-from .serializers import CommentSerializer, ReviewSerializer
+from .serializers import CommentSerializer, ReviewSerializer, TitleSerializer
 
 
-# http://127.0.0.1:8000/api/v1/titles/{title_id}/reviews/
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
     # permission_classes = []
@@ -20,7 +19,6 @@ class ReviewViewSet(ModelViewSet):
         serializer.save(author=self.request.user, title=title)
 
 
-# http://127.0.0.1:8000/api/v1/titles/{title_id}/reviews/{review_id}/comments/
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
     # permission_classes = []
@@ -32,3 +30,9 @@ class CommentViewSet(ModelViewSet):
     def perform_create(self, serializer):
         review = get_object_or_404(Review, id=self.kwargs['review_id'])
         serializer.save(author=self.request.user, review=review)
+
+
+class TitleViewSet(ModelViewSet):
+    serializer_class = TitleSerializer
+    # permission_classes = []
+    queryset = Title.objects.all()
