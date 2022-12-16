@@ -1,18 +1,62 @@
-from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import serializers
+# Standard Library
 from datetime import datetime as dt
 
-from reviews.models import Title, Genre, TitleGenre
+# Django
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.validators import RegexValidator
+from rest_framework import serializers
+
+from reviews.models import Genre, Title, TitleGenre, User
+
+
+class AuthSignupSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=254)
+    username = serializers.CharField(
+        max_length=150, validators=[RegexValidator('^[\\w\\|]+$')]
+    )
+
+    def validate(self, data):
+        """Валидация"""
+        email = data['email']
+        username = data['username']
+
+        if username == 'me':
+            raise serializers.ValidationError(
+                "Can't create user with name 'me'"
+            )
+
+        query = User.objects.filter(email=email).select_related()
+
+        if query:
+            if query.first().username != username:
+                raise serializers.ValidationError(
+                    "This email not compare with user"
+                )
+
+        query = User.objects.filter(username=username).select_related()
+
+        if query:
+            if query.first().email != email:
+                raise serializers.ValidationError(
+                    "This email not compare with user"
+                )
+
+        return data
+
+
+class AuthConfirmSerializer(serializers.Serializer):
+    username = serializers.CharField(
+        max_length=150, validators=[RegexValidator('^[\\w\\|]+$')]
+    )
+    confirmation_code = serializers.CharField()
 
 
 class GenreSerializer(serializers.ModelSerializer):
-
     class Meta:
         fields = ('name', 'slug')
 
 
 class CategorySerializer(serializers.ModelSerializer):
-
     class Meta:
         fields = ('name', 'slug')
 
@@ -23,8 +67,15 @@ class TitleSerializer(serializers.ModelSerializer):
     category = GenreSerializer()
 
     class Meta:
-        fields = ('id', 'name', 'year', 'rating',
-                  'description', 'genre', 'category')
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category',
+        )
         model = Title
 
     def get_rating(self, obj):
@@ -34,7 +85,9 @@ class TitleSerializer(serializers.ModelSerializer):
         try:
             Genre.objects.get(genre=value)
         except ObjectDoesNotExist:
-            raise serializers.ValidationError('Такого жанра нет в списку существующих.')
+            raise serializers.ValidationError(
+                'Такого жанра нет в списку существующих.'
+            )
         return value
 
     def validate_year(self, value):
@@ -48,8 +101,5 @@ class TitleSerializer(serializers.ModelSerializer):
         title = Title.objects.create(**validated_data)
         for genre in genres:
             current_genre, status = Genre.objects.get_or_create(**genre)
-            TitleGenre.objects.get_or_create(
-                genre=current_genre,
-                title=title
-            )
+            TitleGenre.objects.get_or_create(genre=current_genre, title=title)
         return title
