@@ -13,6 +13,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Title, User
 
+# Yatube
+from api.permissions import IsAdmin
 from .serializers import (
     AuthConfirmSerializer,
     AuthSignupSerializer,
@@ -24,18 +26,28 @@ from .serializers import (
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdmin,)
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = PageNumberPagination
     filter_backends = (SearchFilter,)
     search_fields = ("username",)
+    lookup_field = "username"
+    http_method_names = ['get', 'post', 'patch', 'list', 'delete']
 
-    @action(detail=False, methods=['get', 'patch'], url_path='me')
+    @action(
+        detail=False,
+        methods=['get', 'patch'],
+        url_path='me',
+        permission_classes=(IsAuthenticated,),
+    )
     def me(self, request, *args, **kwargs):
         if request.method == 'PATCH':
+            data = request.data.copy()
+            # запрещено менять роль
+            data['role'] = request.user.role
             serializer = self.get_serializer(
-                request.user, data=request.data, partial=True
+                request.user, data=data, partial=True
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
