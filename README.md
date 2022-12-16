@@ -1,11 +1,54 @@
-Модели api_yamdb\reviews\models.py, Сериалайзеры api_yamdb\reviews\serializers.py, Вьюсеты api_yamdb\reviews\views.py - для Отзывы (`Review`), Комментарии (`Comment`) 
+### Как запустить проект:
 
-Вьюсет `TitleViewSet` - демо вариант
+Клонировать репозиторий и перейти в него в командной строке:
 
-Метод `get_rating` в модели `Title` - настроен
+```
+git clone git@github.com:killjoynfk/api_yamdb.git
+```
 
-`TitleSerializer` - демо вариант, обеспечивает отображение рейтинга
+```
+cd api_yamdb
+```
 
-Эндпоинты api_yamdb\reviews\urls.py, роутеры для `TitleViewSet` `ReviewViewSet` `CommentViewSet` api_yamdb\reviews\routers.py - настроены.
+Cоздать и активировать виртуальное окружение:
 
-Нужно доработать сериалайзеры `ReviewSerializer` `CommentSerializer` согласно заданию. 
+```
+python -m venv env
+```
+
+```
+source venv/Source/Activate
+```
+
+Установить зависимости из файла requirements.txt:
+
+```
+python -r requirements.txt
+```
+
+```
+pip install -r requirements.txt
+```
+
+Выполнить миграции:
+
+```
+cd api_yamdb
+```
+
+```
+python manage.py migrate
+```
+
+Запустить проект:
+
+```
+python manage.py runserver
+```
+
+Для импорта базы данных из файлов CSV используйте команду import_csv
+
+```
+python manage.py import_csv --help
+```
+
