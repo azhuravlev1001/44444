@@ -3,13 +3,13 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import (
     CASCADE,
+    Avg,
     DateTimeField,
     ForeignKey,
     Model,
     PositiveSmallIntegerField,
     TextField,
 )
-from django.db.models import Avg
 
 STR_LENGTH = 15
 
@@ -30,6 +30,8 @@ class User(AbstractUser):
         help_text='Укажите роль пользователя',
     )
     bio = models.TextField(
+        blank=True,
+        null=True,
         verbose_name='Биография пользователя',
         help_text='Заполните биографию пользователя',
     )
@@ -55,7 +57,9 @@ class Title(models.Model):
     )
 
     def get_rating(self):
-        rating = Review.objects.filter(title__name=self.name).aggregate(Avg('score'))['score__avg']
+        rating = Review.objects.filter(title__name=self.name).aggregate(
+            Avg('score')
+        )['score__avg']
         return round(rating)
 
     def __str__(self):
