@@ -13,6 +13,10 @@ from reviews.models import (
 )
 
 
+class CustonUserAdmin(UserAdmin):
+    list_display = (*UserAdmin.list_display, 'role')
+
+
 class GenreAdmin(admin.ModelAdmin):
     list_display = ("pk", "name", "slug")
 
@@ -37,7 +41,7 @@ class CommentAdmin(admin.ModelAdmin):
     list_display = ("pk", "review", "author", "text", "pub_date")
 
 
-admin.site.register(User, UserAdmin)
+admin.site.register(User, CustonUserAdmin)
 admin.site.register(Genre, GenreAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Title, TitleAdmin)

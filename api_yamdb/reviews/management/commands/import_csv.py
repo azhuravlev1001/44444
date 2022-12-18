@@ -18,7 +18,6 @@ class Command(BaseCommand):
         'Title': models.Title,
         'Review': models.Review,
         'Comment': models.Comment,
-        # 'OneTitleOneReview': models.OneTitleOneReview,
         'TitleGenre': models.TitleGenre,
     }
 
