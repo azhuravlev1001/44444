@@ -2,19 +2,23 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from datetime import datetime as dt
 
-from reviews.models import Title, Genre, TitleGenre
+from reviews.models import Title, Genre, Category, TitleGenre
 
 
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('name', 'slug')
+        model = Genre
+        lookup_field = 'slug'
 
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('name', 'slug')
+        model = Category
+        lookup_field = 'slug'
 
 
 class TitleSerializer(serializers.ModelSerializer):
