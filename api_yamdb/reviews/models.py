@@ -46,6 +46,7 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
+    """Метод для определения рейтинга get_rating"""
     name = models.CharField(max_length=256)
     year = models.IntegerField()
     description = models.TextField()
@@ -63,6 +64,7 @@ class Title(models.Model):
 
 
 class Review(Model):
+    """Модель отзывов"""
     text = TextField(
         verbose_name='Текст отзыва', help_text='Введите текст отзыва'
     )
@@ -102,6 +104,7 @@ class Review(Model):
 
 
 class Comment(Model):
+    """Модель комментариев"""
     review = ForeignKey(
         Review,
         on_delete=CASCADE,

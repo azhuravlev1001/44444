@@ -1,5 +1,4 @@
 # Django
-from rest_framework.exceptions import ValidationError
 from rest_framework.relations import SlugRelatedField
 from rest_framework.serializers import CharField, IntegerField, ListField, ChoiceField, ModelSerializer, Serializer
 from django.shortcuts import get_object_or_404
@@ -8,6 +7,7 @@ from .models import Comment, Review, Title, User
 
 
 class Representation:
+    """Класс для данных "верхнего уровня" """
     def __init__(self, count, next, previous, results):
         self.count = count
         self.next = next
@@ -16,6 +16,7 @@ class Representation:
 
 
 class RepresentationSerializer(Serializer):
+    """Сериалайзер для данных "верхнего уровня" """
     count = IntegerField()
     next = CharField()
     previous = CharField()
@@ -23,6 +24,7 @@ class RepresentationSerializer(Serializer):
 
 
 def get_serial(Upmodel, queryset, lookup, Serializer):
+    """Типовая функция для сериализации данных "верхнего уровня" """
     content = Representation(
         count=queryset.count(),
         next=str(get_object_or_404(Upmodel, pk=int(lookup) + 1)),
@@ -33,6 +35,7 @@ def get_serial(Upmodel, queryset, lookup, Serializer):
 
 
 class ReviewSerializer(ModelSerializer):
+    """Сериалайзер для модели Отзывы"""
     author = SlugRelatedField(read_only=True, slug_field='username')
     score = ChoiceField(choices=range(1, 11))
 
@@ -42,6 +45,7 @@ class ReviewSerializer(ModelSerializer):
 
 
 class CommentSerializer(ModelSerializer):
+    """Сериалайзер для модели Комментарии"""
     author = SlugRelatedField(read_only=True, slug_field='username')
 
     class Meta:
