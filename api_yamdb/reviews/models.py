@@ -1,4 +1,3 @@
-# Django
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import (
@@ -58,7 +57,9 @@ class Title(models.Model):
     )
 
     def get_rating(self):
-        rating = Review.objects.filter(title__id=self.id).aggregate(Avg('score'))['score__avg']
+        rating = Review.objects.filter(
+            title__id=self.id
+        ).aggregate(Avg('score'))['score__avg']
         return round(rating)
 
     def __str__(self):

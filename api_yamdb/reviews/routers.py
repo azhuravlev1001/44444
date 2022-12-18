@@ -1,5 +1,5 @@
 from rest_framework.routers import DefaultRouter
-from .views import ReviewViewSet, CommentViewSet
+from api.views import ReviewViewSet, CommentViewSet
 
 
 router = DefaultRouter()
