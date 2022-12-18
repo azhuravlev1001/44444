@@ -6,7 +6,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 
-from reviews.models import Genre, Title, TitleGenre, User
+from reviews.models import Genre, Title, TitleGenre, User, Comment, Review
+from rest_framework.relations import SlugRelatedField
+from rest_framework.serializers import ChoiceField, ModelSerializer
 
 
 class AuthSignupSerializer(serializers.Serializer):
@@ -153,3 +155,31 @@ class TitleSerializer(serializers.ModelSerializer):
             current_genre, status = Genre.objects.get_or_create(**genre)
             TitleGenre.objects.get_or_create(genre=current_genre, title=title)
         return title
+
+
+class ReviewSerializer(ModelSerializer):
+    """Сериалайзер для модели Отзывы"""
+    author = SlugRelatedField(read_only=True, slug_field='username')
+    score = ChoiceField(choices=range(1, 11))
+
+    class Meta:
+        model = Review
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
+
+
+class CommentSerializer(ModelSerializer):
+    """Сериалайзер для модели Комментарии"""
+    author = SlugRelatedField(read_only=True, slug_field='username')
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'text', 'author', 'pub_date')
+
+
+# class TitleSerializer(ModelSerializer):
+#     rating = IntegerField(source='get_rating', read_only=True)
+
+#     class Meta:
+#         model = Title
+#         fields = ('name', 'year', 'description', 'genre', 'category',
+#                   'rating')

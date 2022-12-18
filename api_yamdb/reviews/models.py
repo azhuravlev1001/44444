@@ -1,4 +1,3 @@
-# Django
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import (
@@ -48,6 +47,7 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
+    """Метод для определения рейтинга get_rating"""
     name = models.CharField(max_length=256)
     year = models.IntegerField()
     description = models.TextField()
@@ -57,9 +57,9 @@ class Title(models.Model):
     )
 
     def get_rating(self):
-        rating = Review.objects.filter(title__name=self.name).aggregate(
-            Avg('score')
-        )['score__avg']
+        rating = Review.objects.filter(
+            title__id=self.id
+        ).aggregate(Avg('score'))['score__avg']
         return round(rating)
 
     def __str__(self):
@@ -67,6 +67,7 @@ class Title(models.Model):
 
 
 class Review(Model):
+    """Модель отзывов"""
     text = TextField(
         verbose_name='Текст отзыва', help_text='Введите текст отзыва'
     )
@@ -100,6 +101,7 @@ class Review(Model):
 
 
 class Comment(Model):
+    """Модель комментариев"""
     review = ForeignKey(
         Review,
         on_delete=CASCADE,
