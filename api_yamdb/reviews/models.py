@@ -58,10 +58,6 @@ class Title(models.Model):
         rating = Review.objects.filter(title__id=self.id).aggregate(Avg('score'))['score__avg']
         return round(rating)
 
-    def get_count(self):
-        return Review.objects.filter(title__id=self.id).count()
-
-
     def __str__(self):
         return self.name
 
