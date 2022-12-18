@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from .models import Comment, Review, Title, User
 from .serializers import ReviewSerializer, get_serial, CommentSerializer
 from django.shortcuts import get_object_or_404
@@ -8,6 +9,7 @@ from rest_framework.exceptions import ValidationError
 
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         return Review.objects.filter(title__id=self.kwargs['title_id'])
@@ -44,5 +46,5 @@ class CommentViewSet(ModelViewSet):
 
 # class TitleViewSet(ModelViewSet):
 #     serializer_class = TitleSerializer
-#     # permission_classes = []
+#     permission_classes = []
 #     queryset = Title.objects.all()
