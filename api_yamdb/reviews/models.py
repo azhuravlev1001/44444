@@ -58,13 +58,7 @@ class Title(models.Model):
     )
 
     def get_rating(self):
-<<<<<<< HEAD
         rating = Review.objects.filter(title__id=self.id).aggregate(Avg('score'))['score__avg']
-=======
-        rating = Review.objects.filter(title__name=self.name).aggregate(
-            Avg('score')
-        )['score__avg']
->>>>>>> 8f0ec404e0acf84db1dc29815d8e81cdb73c9e0c
         return round(rating)
 
     def __str__(self):
@@ -97,12 +91,6 @@ class Review(Model):
         auto_now_add=True,
         help_text='Дата публикации отзыва (ставится автоматически)',
     )
-
-    def get_results(self):
-        return 6
-    
-    def get_count(self):
-        return 6
 
     class Meta:
         ordering = ['-pub_date']
