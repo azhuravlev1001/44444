@@ -21,18 +21,36 @@ class CategorySerializer(serializers.ModelSerializer):
         lookup_field = 'slug'
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    rating = serializers.SerializerMethodField()
-    genre = GenreSerializer(many=True, required=False)
-    category = GenreSerializer()
+class CreateTitleSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Genre.objects.all(),
+        many=True
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+    )
+    description = serializers.CharField(required=False)
 
     class Meta:
-        fields = ('id', 'name', 'year', 'rating',
+        fields = ('id', 'name', 'year',
                   'description', 'genre', 'category')
         model = Title
 
-    def get_rating(self, obj):
-        return None
+    def create(self, validated_data):
+        genres = validated_data.pop('genre')
+        categories = validated_data.pop('category')
+        title = Title.objects.create(**validated_data)
+        for genre in genres:
+            current_genre, status = Genre.objects.get_or_create(**genre)
+            TitleGenre.objects.create(
+                genre=current_genre,
+                title=title
+            )
+        for category in categories:
+            Category.objects.create(**category)
+        return title
 
     def validate_genre(self, value):
         try:
@@ -42,18 +60,23 @@ class TitleSerializer(serializers.ModelSerializer):
         return value
 
     def validate_year(self, value):
-        year = dt.date().today().year
+        year = dt.now().year
         if value > year:
             raise serializers.ValidationError('Проверьте указанную дату.')
         return value
 
-    def create(self, validated_data):
-        genres = validated_data.pop('genre')
-        title = Title.objects.create(**validated_data)
-        for genre in genres:
-            current_genre, status = Genre.objects.get_or_create(**genre)
-            TitleGenre.objects.get_or_create(
-                genre=current_genre,
-                title=title
-            )
-        return title
+
+class GetTitleSerializer(serializers.ModelSerializer):
+    rating = serializers.SerializerMethodField()
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
+
+    class Meta:
+        fields = ('id', 'name', 'year', 'rating',
+                  'description', 'genre', 'category')
+        model = Title
+        read_only_fields = ('rating', 'category', 'genre')
+
+    def get_rating(self, obj):
+        return None
+

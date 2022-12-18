@@ -142,3 +142,6 @@ class TitleGenre(models.Model):
     genre = models.ForeignKey(
         Genre, on_delete=models.CASCADE, related_name='genre'
     )
+
+    class Meta:
+        unique_together = ('title', 'genre')
