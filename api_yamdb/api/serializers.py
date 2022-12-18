@@ -40,24 +40,10 @@ class CreateTitleSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         genres = validated_data.pop('genre')
-        categories = validated_data.pop('category')
         title = Title.objects.create(**validated_data)
         for genre in genres:
-            current_genre, status = Genre.objects.get_or_create(**genre)
-            TitleGenre.objects.create(
-                genre=current_genre,
-                title=title
-            )
-        for category in categories:
-            Category.objects.create(**category)
+            TitleGenre.objects.create(genre=genre, title=title)
         return title
-
-    def validate_genre(self, value):
-        try:
-            Genre.objects.get(genre=value)
-        except ObjectDoesNotExist:
-            raise serializers.ValidationError('Такого жанра нет в списку существующих.')
-        return value
 
     def validate_year(self, value):
         year = dt.now().year
