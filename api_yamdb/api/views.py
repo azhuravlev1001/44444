@@ -14,11 +14,9 @@ from rest_framework.viewsets import ModelViewSet
 
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import Category, Genre, Title, User
-from api.permissions import IsAdmin, ReadOnly
 from reviews.models import Category, Genre, Title, User, Comment, Review
+from api.permissions import IsAdmin, ReadOnly
 
-# Yatube
 from api.permissions import (
     IsAdmin,
     AnyoneWatches,
