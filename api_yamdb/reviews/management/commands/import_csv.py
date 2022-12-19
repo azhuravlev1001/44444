@@ -5,14 +5,25 @@ from os.path import exists
 # Django
 from django.core.management.base import BaseCommand, CommandError
 
-from reviews.models import User
+from reviews import models
 
 
 class Command(BaseCommand):
     help = 'Import csv files to table of DB'
 
-    TABLES = {
-        'User': User,
+    MODELS = {
+        'User': models.User,
+        'Category': models.Category,
+        'Genre': models.Genre,
+        'Title': models.Title,
+        'Review': models.Review,
+        'Comment': models.Comment,
+        'TitleGenre': models.TitleGenre,
+    }
+
+    HEADERS = {
+        'author': models.User,
+        'category': models.Category,
     }
 
     def add_arguments(self, parser):
@@ -20,10 +31,43 @@ class Command(BaseCommand):
         parser.add_argument(
             '-t',
             '--table',
-            choices=self.TABLES.keys(),
+            choices=self.MODELS.keys(),
             type=str,
             required=True,
         )
+
+    def import_model(self, reader, model):
+        """Загружает данные из csv reader в БД
+
+        :param reader: ридер
+        :param model: модель django
+        """
+
+        headers = []
+        for row in reader:
+            headers = row
+            break
+
+        for row in reader:
+            data = {}
+            try:
+                for position, header in enumerate(headers):
+                    if header in self.HEADERS:
+                        data[header] = self.HEADERS[header].objects.get(
+                            pk=row[position]
+                        )
+                    else:
+                        data[header] = row[position]
+
+                model.objects.get_or_create(**data)
+
+                self.stdout.write(self.style.NOTICE(f'Load note: {data}'))
+            except Exception as what:
+                self.stdout.write(
+                    self.style.ERROR(f'Error to load note: {what}')
+                )
+
+        self.style.SUCCESS('Successfully load table')
 
     def import_table(self, file, table):
         """Загружает данные csv в БД
@@ -39,27 +83,10 @@ class Command(BaseCommand):
         if not exists(file):
             raise CommandError(f'Can\'t find file: {file}')
 
-        model = self.TABLES[table]
-        with open(file) as csvfile:
+        model = self.MODELS[table]
+        with open(file, encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
-
-            headers = []
-            for row in reader:
-                headers = row
-                break
-
-            for row in reader:
-                data = {}
-                for position, header in enumerate(headers):
-                    data[header] = row[position]
-
-                model.objects.get_or_create(**data)
-
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f'Successfully load table: {str(table)}, from file: {file}'
-                )
-            )
+            self.import_model(reader, model)
 
     def handle(self, *args, **options):
         files = options['file']
