@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, mixins, permissions
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
@@ -13,9 +13,10 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.viewsets import ModelViewSet
 
 from rest_framework_simplejwt.tokens import AccessToken
-from reviews.models import Category, Genre, Title, User, Comment, Review
 
-# Yatube
+from reviews.models import Category, Genre, Title, User, Comment, Review
+from api.permissions import IsAdmin, ReadOnly
+
 from api.permissions import (
     IsAdmin,
     AnyoneWatches,
@@ -30,7 +31,8 @@ from .serializers import (
     AuthSignupSerializer,
     CategorySerializer,
     GenreSerializer,
-    TitleSerializer,
+    CreateTitleSerializer,
+    GetTitleSerializer,
     UserSerializer,
     ReviewSerializer,
     CommentSerializer
@@ -102,20 +104,52 @@ class AuthViewSet(viewsets.ViewSet):
             return Response({'token': str(token)})
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
+class ListCreateDestroyViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
+):
+    pass
 
-class CategoryViewSet(viewsets.ModelViewSet):
+
+class CategoryViewSet(ListCreateDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    lookup_field = 'slug'
+    permission_classes = (permissions.IsAdminUser,)
+
+    def get_permissions(self):
+        if self.action == 'list':
+            return (ReadOnly(),)
+        return super().get_permissions()
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(ListCreateDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    lookup_field = 'slug'
+    permission_classes = (permissions.IsAdminUser,)
+
+    def get_permissions(self):
+        if self.action == 'list':
+            return (ReadOnly(),)
+        return super().get_permissions()
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
+    permission_classes = (permissions.IsAdminUser,)
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrive']:
+            return (ReadOnly(),)
+        return super().get_permissions()
+
+    def get_serializer_class(self):
+        if self.request.method in ('POST', 'PUT', 'PATCH'):
+            return CreateTitleSerializer
+        return GetTitleSerializer
 
 
 class ReviewViewSet(ModelViewSet):
@@ -167,9 +201,3 @@ class CommentViewSet(ModelViewSet):
         user = self.request.user
         review = get_object_or_404(Review, pk=self.kwargs['review_id'])
         serializer.save(author=user, review=review)
-
-
-# class TitleViewSet(ModelViewSet):
-#     serializer_class = TitleSerializer
-#     permission_classes = []
-#     queryset = Title.objects.all()
