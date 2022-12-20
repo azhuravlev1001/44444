@@ -19,7 +19,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from api.permissions import IsAdmin, ReadOnly
 from reviews.models import Category, Genre, Title, User, Comment, Review
 
-# Yatube
 from api.permissions import (
     IsAdmin,
     AnyoneWatches,
@@ -27,8 +26,7 @@ from api.permissions import (
     AdminChanges,
     AuthorChanges,
     ModeratorChanges,
-    SuperuserChanges,
-    # IsAdminOrSuperUser
+    SuperuserChanges
 )
 from .serializers import (
     AuthConfirmSerializer,
