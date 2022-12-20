@@ -3,7 +3,8 @@ from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import status, viewsets, mixins, permissions
+from rest_framework import (status, viewsets, mixins,
+                            permissions, filters)
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
@@ -13,9 +14,10 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.viewsets import ModelViewSet
 
 from rest_framework_simplejwt.tokens import AccessToken
+from django_filters.rest_framework import DjangoFilterBackend
 
-from reviews.models import Category, Genre, Title, User, Comment, Review
 from api.permissions import IsAdmin, ReadOnly
+from reviews.models import Category, Genre, Title, User, Comment, Review
 
 from api.permissions import (
     IsAdmin,
@@ -118,34 +120,30 @@ class CategoryViewSet(ListCreateDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
-    permission_classes = (permissions.IsAdminUser,)
-
-    def get_permissions(self):
-        if self.action == 'list':
-            return (ReadOnly(),)
-        return super().get_permissions()
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
 
 
 class GenreViewSet(ListCreateDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     lookup_field = 'slug'
-    permission_classes = (permissions.IsAdminUser,)
-
-    def get_permissions(self):
-        if self.action == 'list':
-            return (ReadOnly(),)
-        return super().get_permissions()
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    permission_classes = (permissions.IsAdminUser,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('category__slug',
+                       'genre__slug',
+                       'name',
+                       'year')
 
-    def get_permissions(self):
-        if self.action in ['list', 'retrive']:
-            return (ReadOnly(),)
-        return super().get_permissions()
+    # def get_permissions(self):
+    #     if self.action in ['put', 'patch', 'delete', 'create']:
+    #         return [IsAdminOrSuperUser]
+    #     return super().get_permissions()
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PUT', 'PATCH'):
