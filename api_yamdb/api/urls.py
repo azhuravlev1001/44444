@@ -16,5 +16,5 @@ router_v1.register(r'titles/(?P<titles_id>\d+)', TitleViewSet)
 api_version = "v1"
 
 urlpatterns = [
-    path(f"{api_version}/", include(v1_router.urls)),
+    path(f"{api_version}/", include(router_v1.urls)),
 ]

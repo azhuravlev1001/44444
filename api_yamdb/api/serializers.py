@@ -11,7 +11,6 @@ from reviews.models import (Genre, Category,
                             Comment)
 
 
-
 class AuthSignupSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=254)
     username = serializers.CharField(
@@ -165,22 +164,24 @@ class GetTitleSerializer(serializers.ModelSerializer):
     def get_rating(self, obj):
         return None
 
+
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели Отзывы"""
-    author = serializers.SlugRelatedField(read_only=True, slug_field='username')
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username'
+    )
     score = serializers.ChoiceField(choices=range(1, 11))
-
 
     class Meta:
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
 
 
-
 class CommentSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели Комментарии"""
-    author = serializers.SlugRelatedField(read_only=True, slug_field='username')
-
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username'
+    )
 
     class Meta:
         model = Comment

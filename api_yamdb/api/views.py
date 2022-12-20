@@ -104,6 +104,7 @@ class AuthViewSet(viewsets.ViewSet):
             return Response({'token': str(token)})
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 class ListCreateDestroyViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,

@@ -59,7 +59,9 @@ class ModeratorChanges(BasePermission):
 
 class AdminChanges(BasePermission):
     def has_object_permission(self, request, view, obj):
-        return bool(request.user.is_authenticated and request.user.is_staff)
+        return bool(
+            request.user.is_authenticated and request.user.role == 'admin'
+        )
 
 
 class SuperuserChanges(BasePermission):
