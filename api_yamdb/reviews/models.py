@@ -49,7 +49,6 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    """Метод для определения рейтинга get_rating"""
 
     name = models.CharField(max_length=256)
     year = models.IntegerField()
@@ -60,9 +59,10 @@ class Title(models.Model):
     )
 
     def get_rating(self):
-        rating = Review.objects.filter(title__id=self.id).aggregate(
-            Avg('score')
-        )['score__avg']
+        rating = Review.objects.filter(
+            title__id=self.id).aggregate(Avg('score')).get('score__avg')
+        if not isinstance(rating, float):
+            return None
         return round(rating)
 
     def __str__(self):
@@ -88,8 +88,10 @@ class Review(Model):
         help_text='Автор отзыва',
     )
     score = PositiveSmallIntegerField(
+        null=False,
+        blank=False,
         verbose_name='Оценка отзыва',
-        help_text='Оценка отзыва, число от 1 до 10',
+        help_text='Оценка отзыва, число от 1 до 10'
     )
     pub_date = DateTimeField(
         verbose_name='Дата публикации отзыва',
@@ -99,6 +101,7 @@ class Review(Model):
 
     class Meta:
         ordering = ['-pub_date']
+        unique_together = ['title', 'author']
 
     def __str__(self):
         return self.text[:STR_LENGTH]

@@ -151,7 +151,7 @@ class CreateTitleSerializer(serializers.ModelSerializer):
 
 
 class GetTitleSerializer(serializers.ModelSerializer):
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField(source='get_rating')
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
 
@@ -160,9 +160,6 @@ class GetTitleSerializer(serializers.ModelSerializer):
                   'description', 'genre', 'category')
         model = Title
         read_only_fields = ('rating', 'category', 'genre')
-
-    def get_rating(self, obj):
-        return None
 
 
 class ReviewSerializer(serializers.ModelSerializer):
