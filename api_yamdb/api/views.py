@@ -3,45 +3,43 @@ from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import (status, viewsets, mixins, filters)
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
 from rest_framework.viewsets import ModelViewSet
-
 from rest_framework_simplejwt.tokens import AccessToken
-from django_filters.rest_framework import DjangoFilterBackend
 
-from .filters import TitleFilter
-from reviews.models import Category, Genre, Title, User, Comment, Review
-
-from .permissions import (
-    IsAdmin,
-    AnyoneWatches,
-    UserMakesNew,
+# Yamdb
+from api.filters import TitleFilter
+from api.permissions import (
     AdminChanges,
+    AnyoneWatches,
     AuthorChanges,
     ModeratorChanges,
-    SuperuserChanges
+    SuperuserChanges,
+    UserMakesNew,
 )
-from .serializers import (
+from api.serializers import (
     AuthConfirmSerializer,
     AuthSignupSerializer,
     CategorySerializer,
-    GenreSerializer,
+    CommentSerializer,
     CreateTitleSerializer,
+    GenreSerializer,
     GetTitleSerializer,
-    UserSerializer,
     ReviewSerializer,
-    CommentSerializer
+    UserSerializer,
 )
+from reviews.models import Category, Comment, Genre, Review, Title, User
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAdmin,)
+    permission_classes = [AdminChanges | SuperuserChanges]
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = PageNumberPagination
@@ -110,17 +108,13 @@ class ListCreateDestroyViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
-    viewsets.GenericViewSet
+    viewsets.GenericViewSet,
 ):
     pass
 
 
 class CategoryViewSet(ListCreateDestroyViewSet):
-    permission_classes = [
-        AnyoneWatches
-        | AdminChanges
-        | SuperuserChanges
-    ]
+    permission_classes = [AnyoneWatches | AdminChanges | SuperuserChanges]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
@@ -129,11 +123,7 @@ class CategoryViewSet(ListCreateDestroyViewSet):
 
 
 class GenreViewSet(ListCreateDestroyViewSet):
-    permission_classes = [
-        AnyoneWatches
-        | AdminChanges
-        | SuperuserChanges
-    ]
+    permission_classes = [AnyoneWatches | AdminChanges | SuperuserChanges]
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     lookup_field = 'slug'
@@ -142,11 +132,7 @@ class GenreViewSet(ListCreateDestroyViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    permission_classes = [
-        AnyoneWatches
-        | AdminChanges
-        | SuperuserChanges
-    ]
+    permission_classes = [AnyoneWatches | AdminChanges | SuperuserChanges]
     queryset = Title.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -159,6 +145,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(ModelViewSet):
     """Вьюсет для модели Отзывы"""
+
     serializer_class = ReviewSerializer
     permission_classes = [
         AnyoneWatches
@@ -177,14 +164,13 @@ class ReviewViewSet(ModelViewSet):
         user = self.request.user
         title = get_object_or_404(Title, pk=self.kwargs['title_id'])
         if Review.objects.filter(author=user, title=title):
-            raise ValidationError(
-                'Ваш отзыв на это произведение уже есть'
-            )
+            raise ValidationError('Ваш отзыв на это произведение уже есть')
         serializer.save(author=user, title=title)
 
 
 class CommentViewSet(ModelViewSet):
     """Вьюсет для модели Комментарии"""
+
     serializer_class = CommentSerializer
     permission_classes = [
         AnyoneWatches
@@ -198,9 +184,7 @@ class CommentViewSet(ModelViewSet):
     def get_queryset(self):
         return Comment.objects.filter(
             review__title__id=self.kwargs['title_id']
-        ).filter(
-            review__id=self.kwargs['review_id']
-        )
+        ).filter(review__id=self.kwargs['review_id'])
 
     def perform_create(self, serializer):
         user = self.request.user

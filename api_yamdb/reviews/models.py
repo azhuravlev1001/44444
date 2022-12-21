@@ -37,18 +37,32 @@ class User(AbstractUser):
         help_text='Заполните биографию пользователя',
     )
 
+    class Meta:
+        ordering = ['-username']
+
 
 class Category(models.Model):
+    """Модель категорий произведений"""
+
     name = models.CharField(max_length=256)
     slug = models.SlugField(max_length=50, unique=True)
+
+    class Meta:
+        ordering = ['-name']
 
 
 class Genre(models.Model):
+    """Модель жанров произведений"""
+
     name = models.CharField(max_length=256)
     slug = models.SlugField(max_length=50, unique=True)
 
+    class Meta:
+        ordering = ['-name']
+
 
 class Title(models.Model):
+    """Модель произведений"""
 
     name = models.CharField(max_length=256)
     year = models.IntegerField()
@@ -58,9 +72,15 @@ class Title(models.Model):
         Category, on_delete=models.SET_NULL, null=True, related_name='titles'
     )
 
+    class Meta:
+        ordering = ['-name']
+
     def get_rating(self):
-        rating = Review.objects.filter(
-            title__id=self.id).aggregate(Avg('score')).get('score__avg')
+        rating = (
+            Review.objects.filter(title__id=self.id)
+            .aggregate(Avg('score'))
+            .get('score__avg')
+        )
         if not isinstance(rating, float):
             return None
         return round(rating)
@@ -91,7 +111,7 @@ class Review(Model):
         null=False,
         blank=False,
         verbose_name='Оценка отзыва',
-        help_text='Оценка отзыва, число от 1 до 10'
+        help_text='Оценка отзыва, число от 1 до 10',
     )
     pub_date = DateTimeField(
         verbose_name='Дата публикации отзыва',

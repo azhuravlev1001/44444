@@ -5,6 +5,7 @@ from os.path import exists
 # Django
 from django.core.management.base import BaseCommand, CommandError
 
+# Yamdb
 from reviews import models
 
 
