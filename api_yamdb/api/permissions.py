@@ -86,7 +86,6 @@ class AdminChanges(BasePermission):
             request.user and request.user.is_authenticated and request.user.role == 'admin'
         )
 
-
 class SuperuserChanges(BasePermission):
     def has_permission(self, request, view):
         return bool(
