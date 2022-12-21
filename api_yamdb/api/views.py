@@ -3,12 +3,11 @@ from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import (status, viewsets, mixins,
-                            permissions, filters)
+from rest_framework import (status, viewsets, mixins, filters)
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework.viewsets import ModelViewSet
@@ -19,7 +18,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filters import TitleFilter
 from reviews.models import Category, Genre, Title, User, Comment, Review
 
-from api.permissions import (
+from .permissions import (
     IsAdmin,
     AnyoneWatches,
     UserMakesNew,
@@ -106,6 +105,7 @@ class AuthViewSet(viewsets.ViewSet):
             return Response({'token': str(token)})
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 class ListCreateDestroyViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
@@ -116,6 +116,11 @@ class ListCreateDestroyViewSet(
 
 
 class CategoryViewSet(ListCreateDestroyViewSet):
+    permission_classes = [
+        AnyoneWatches
+        | AdminChanges
+        | SuperuserChanges
+    ]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
@@ -124,6 +129,11 @@ class CategoryViewSet(ListCreateDestroyViewSet):
 
 
 class GenreViewSet(ListCreateDestroyViewSet):
+    permission_classes = [
+        AnyoneWatches
+        | AdminChanges
+        | SuperuserChanges
+    ]
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     lookup_field = 'slug'
@@ -132,6 +142,11 @@ class GenreViewSet(ListCreateDestroyViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    permission_classes = [
+        AnyoneWatches
+        | AdminChanges
+        | SuperuserChanges
+    ]
     queryset = Title.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter

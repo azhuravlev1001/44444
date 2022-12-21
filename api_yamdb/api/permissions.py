@@ -40,33 +40,59 @@ class AnyoneWatches(BasePermission):
 
 
 class UserMakesNew(BasePermission):
+    def has_permission(self, request, view):
+        return bool(
+            request.user and request.user.is_authenticated and request.method == 'POST'
+        )
+
     def has_object_permission(self, request, view, obj):
         return bool(
-            request.user.is_authenticated and request.method == 'POST'
+            request.user and request.user.is_authenticated and request.method == 'POST'
         )
 
 
 class AuthorChanges(BasePermission):
+    def has_permission(self, request, view):
+        return bool(
+            request.user and request.user.is_authenticated
+        )
+
     def has_object_permission(self, request, view, obj):
         return bool(
-            request.user.is_authenticated and request.user == obj.author
+            request.user and request.user.is_authenticated and request.user == obj.author
         )
 
 
 class ModeratorChanges(BasePermission):
+    def has_permission(self, request, view):
+        return bool(
+            request.user and request.user.is_authenticated and request.user.role == 'moderator'
+        )
+
     def has_object_permission(self, request, view, obj):
         return bool(
-            request.user.is_authenticated and request.user.role == 'moderator'
+            request.user and request.user.is_authenticated and request.user.role == 'moderator'
         )
 
 
 class AdminChanges(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return bool(request.user.is_authenticated and request.user.is_staff)
+    def has_permission(self, request, view):
+        return bool(
+            request.user and request.user.is_authenticated and request.user.role == 'admin'
+        )
 
-
-class SuperuserChanges(BasePermission):
     def has_object_permission(self, request, view, obj):
         return bool(
-            request.user.is_authenticated and request.user.is_superuser
+            request.user and request.user.is_authenticated and request.user.role == 'admin'
+        )
+
+class SuperuserChanges(BasePermission):
+    def has_permission(self, request, view):
+        return bool(
+            request.user and request.user.is_authenticated and request.user.is_superuser
+        )
+
+    def has_object_permission(self, request, view, obj):
+        return bool(
+            request.user and request.user.is_authenticated and request.user.is_superuser
         )

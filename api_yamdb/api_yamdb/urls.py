@@ -6,7 +6,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/drf-auth', include('rest_framework.urls')),
     path('api/', include('api.urls')),
-    path('api/', include('reviews.urls')),
     path(
         'redoc/',
         TemplateView.as_view(template_name='redoc.html'),
