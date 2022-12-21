@@ -70,16 +70,3 @@ class SuperuserChanges(BasePermission):
         return bool(
             request.user.is_authenticated and request.user.is_superuser
         )
-
-# class IsAdminOrSuperUser(BasePermission):
-#     def has_permission(self, request, view):
-#         if (request.user.role == 'admin') or request.user.is_superuser:
-#             return True
-#
-#     def has_object_permission(self, request, view, obj):
-#         if (request.user.role == 'admin') or request.user.is_superuser:
-#             return True
-#
-# # class CreatePermission(BasePermission):
-
-

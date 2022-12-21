@@ -16,7 +16,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
 
-from api.permissions import IsAdmin, ReadOnly
+from .filters import TitleFilter
 from reviews.models import Category, Genre, Title, User, Comment, Review
 
 from api.permissions import (
@@ -134,15 +134,7 @@ class GenreViewSet(ListCreateDestroyViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('category__slug',
-                       'genre__slug',
-                       'name',
-                       'year')
-
-    # def get_permissions(self):
-    #     if self.action in ['put', 'patch', 'delete', 'create']:
-    #         return [IsAdminOrSuperUser]
-    #     return super().get_permissions()
+    filterset_class = TitleFilter
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PUT', 'PATCH'):
