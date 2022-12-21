@@ -1,34 +1,11 @@
-from rest_framework.permissions import (BasePermission,
-                                        IsAuthenticated,
-                                        SAFE_METHODS)
+# Django
+from rest_framework.permissions import (
+    SAFE_METHODS,
+    BasePermission,
+    IsAuthenticated,
+)
 
 from reviews.models import User
-
-
-class ReadOnly(BasePermission):
-
-    def has_permission(self, request, view):
-        return request.method in SAFE_METHODS
-
-    def has_object_permission(self, request, view, obj):
-        return request.method in SAFE_METHODS
-
-
-class IsAdmin(IsAuthenticated):
-
-    def has_permission(self, request, view):
-        return super().has_permission(request, view) and (
-            request.user.is_superuser or request.user.role == User.Role.ADMIN
-        )
-
-
-class IsModerator(IsAuthenticated):
-
-    def has_permission(self, request, view):
-        return super().has_permission(request, view) and (
-            request.user.is_superuser
-            or request.user.role == User.Role.MODERATOR
-        )
 
 
 class AnyoneWatches(BasePermission):
@@ -39,61 +16,63 @@ class AnyoneWatches(BasePermission):
         return bool(request.method in SAFE_METHODS)
 
 
-class UserMakesNew(BasePermission):
+class UserMakesNew(IsAuthenticated):
     def has_permission(self, request, view):
         return bool(
-            request.user and request.user.is_authenticated and request.method == 'POST'
+            super().has_permission(request, view) and request.method == 'POST'
         )
 
     def has_object_permission(self, request, view, obj):
         return bool(
-            request.user and request.user.is_authenticated and request.method == 'POST'
+            super().has_object_permission(request, view, obj)
+            and request.method == 'POST'
         )
 
 
-class AuthorChanges(BasePermission):
+class AuthorChanges(IsAuthenticated):
+    def has_object_permission(self, request, view, obj):
+        return bool(
+            super().has_permission(request, view)
+            and request.user == obj.author
+        )
+
+
+class ModeratorChanges(IsAuthenticated):
     def has_permission(self, request, view):
         return bool(
-            request.user and request.user.is_authenticated
+            super().has_permission(request, view)
+            and request.user.role == User.Role.MODERATOR
         )
 
     def has_object_permission(self, request, view, obj):
         return bool(
-            request.user and request.user.is_authenticated and request.user == obj.author
+            super().has_object_permission(request, view, obj)
+            and request.user.role == User.Role.MODERATOR
         )
 
 
-class ModeratorChanges(BasePermission):
+class AdminChanges(IsAuthenticated):
     def has_permission(self, request, view):
         return bool(
-            request.user and request.user.is_authenticated and request.user.role == 'moderator'
+            super().has_permission(request, view)
+            and request.user.role == User.Role.ADMIN
         )
 
     def has_object_permission(self, request, view, obj):
         return bool(
-            request.user and request.user.is_authenticated and request.user.role == 'moderator'
+            super().has_object_permission(request, view, obj)
+            and request.user.role == User.Role.ADMIN
         )
 
 
-class AdminChanges(BasePermission):
+class SuperuserChanges(IsAuthenticated):
     def has_permission(self, request, view):
         return bool(
-            request.user and request.user.is_authenticated and request.user.role == 'admin'
+            super().has_permission(request, view) and request.user.is_superuser
         )
 
     def has_object_permission(self, request, view, obj):
         return bool(
-            request.user and request.user.is_authenticated and request.user.role == 'admin'
-        )
-
-
-class SuperuserChanges(BasePermission):
-    def has_permission(self, request, view):
-        return bool(
-            request.user and request.user.is_authenticated and request.user.is_superuser
-        )
-
-    def has_object_permission(self, request, view, obj):
-        return bool(
-            request.user and request.user.is_authenticated and request.user.is_superuser
+            super().has_object_permission(request, view, obj)
+            and request.user.is_superuser
         )

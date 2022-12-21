@@ -5,13 +5,20 @@ from datetime import datetime as dt
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 
-from reviews.models import (Genre, Category,
-                            Title, TitleGenre,
-                            User, Review,
-                            Comment)
+from reviews.models import (
+    Category,
+    Comment,
+    Genre,
+    Review,
+    Title,
+    TitleGenre,
+    User,
+)
 
 
 class AuthSignupSerializer(serializers.Serializer):
+    """Класс сериализации данных регистрации нового пользователя"""
+
     email = serializers.EmailField(max_length=254)
     username = serializers.CharField(
         max_length=150, validators=[RegexValidator('^[\\w\\|@\\.]+$')]
@@ -19,24 +26,26 @@ class AuthSignupSerializer(serializers.Serializer):
 
     def validate(self, data):
         """Валидация"""
+
         email = data['email']
         username = data['username']
 
+        # Ограничение на api пользователя
         if username == 'me':
             raise serializers.ValidationError(
                 "Нельзя создавать пользователя с именем 'me'"
             )
 
+        # Ограничение на дубликат username
         query = User.objects.filter(email=email).select_related()
-
         if query:
             if query.first().username != username:
                 raise serializers.ValidationError(
                     "Указанное имя уже используется"
                 )
 
+        # Ограничение на дубликат email
         query = User.objects.filter(username=username).select_related()
-
         if query:
             if query.first().email != email:
                 raise serializers.ValidationError(
@@ -47,6 +56,8 @@ class AuthSignupSerializer(serializers.Serializer):
 
 
 class AuthConfirmSerializer(serializers.Serializer):
+    """Класс сериализации данных подтверждения регистрации"""
+
     username = serializers.CharField(
         max_length=150, validators=[RegexValidator('^[\\w\\|@\\.]+$')]
     )
@@ -54,6 +65,8 @@ class AuthConfirmSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Класс сериализации модели User"""
+
     email = serializers.EmailField(max_length=254)
     username = serializers.CharField(
         max_length=150, validators=[RegexValidator('^[\\w\\|@\\.]+$')]
@@ -74,6 +87,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_user(self):
         """Возвращает текущего пользователя"""
+
         user = None
         request = self.context.get("request")
         if request and hasattr(request, "user"):
@@ -82,9 +96,12 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_method(self):
         """Возвращает текущий метод"""
+
         return self.context.get("request").method
 
     def validate_email(self, value):
+        """Валидация email"""
+
         if self.get_method() == 'POST':
             if self.get_user().role == User.Role.ADMIN:
                 if User.objects.filter(email=value).select_related():
@@ -94,6 +111,8 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
     def validate_username(self, value):
+        """Валидация username"""
+
         if self.get_method() == 'POST':
             if self.get_user().role == User.Role.ADMIN:
                 if User.objects.filter(username=value).select_related():
@@ -104,6 +123,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    """Сериализация жанров"""
 
     class Meta:
         fields = ('name', 'slug')
@@ -112,6 +132,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    """Сериализация категориев"""
 
     class Meta:
         fields = ('name', 'slug')
@@ -120,20 +141,18 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class CreateTitleSerializer(serializers.ModelSerializer):
+    """Сериализация создания произведений"""
+
     genre = serializers.SlugRelatedField(
-        slug_field='slug',
-        queryset=Genre.objects.all(),
-        many=True
+        slug_field='slug', queryset=Genre.objects.all(), many=True
     )
     category = serializers.SlugRelatedField(
-        slug_field='slug',
-        queryset=Category.objects.all()
+        slug_field='slug', queryset=Category.objects.all()
     )
     description = serializers.CharField(required=False)
 
     class Meta:
-        fields = ('id', 'name', 'year',
-                  'description', 'genre', 'category')
+        fields = '__all__'
         model = Title
 
     def create(self, validated_data):
@@ -151,19 +170,21 @@ class CreateTitleSerializer(serializers.ModelSerializer):
 
 
 class GetTitleSerializer(serializers.ModelSerializer):
+    """Сериализация произведений"""
+
     rating = serializers.IntegerField(source='get_rating')
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
 
     class Meta:
-        fields = ('id', 'name', 'year', 'rating',
-                  'description', 'genre', 'category')
+        fields = '__all__'
         model = Title
         read_only_fields = ('rating', 'category', 'genre')
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели Отзывы"""
+
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
@@ -176,6 +197,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели Комментарии"""
+
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
