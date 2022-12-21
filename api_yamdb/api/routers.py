@@ -1,7 +1,8 @@
 # Django
 from rest_framework.routers import DefaultRouter
 
-from .views import (
+# Yamdb
+from api.views import (
     AuthViewSet,
     CategoryViewSet,
     CommentViewSet,

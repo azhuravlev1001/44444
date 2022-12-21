@@ -1,5 +1,8 @@
-from .routers import router
-from django.urls import path, include
+# Django
+from django.urls import include, path
+
+# Yamdb
+from api.routers import router
 
 api_version = "v1"
 
