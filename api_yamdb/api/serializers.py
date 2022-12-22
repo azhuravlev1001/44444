@@ -16,6 +16,8 @@ from reviews.models import (
     User,
 )
 
+from reviews.validators import UserValidator
+
 
 class AuthSignupSerializer(serializers.Serializer):
     """Класс сериализации данных регистрации нового пользователя"""
@@ -32,7 +34,7 @@ class AuthSignupSerializer(serializers.Serializer):
         username = data['username']
 
         # Ограничение на api пользователя
-        if username == 'me':
+        if username.lower() == 'me':
             raise serializers.ValidationError(
                 "Нельзя создавать пользователя с именем 'me'"
             )
@@ -68,9 +70,11 @@ class AuthConfirmSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     """Класс сериализации модели User"""
 
-    email = serializers.EmailField(max_length=254)
+    email = serializers.EmailField(max_length=254, validators=[UserValidator])
     username = serializers.CharField(
-        max_length=150, validators=[RegexValidator('^[\\w\\|@\\.]+$')]
+        max_length=150, validators=[
+            RegexValidator('^[\\w\\|@\\.]+$'), UserValidator
+        ]
     )
     last_name = serializers.CharField(max_length=150, required=False)
     first_name = serializers.CharField(max_length=150, required=False)
@@ -99,28 +103,6 @@ class UserSerializer(serializers.ModelSerializer):
         """Возвращает текущий метод"""
 
         return self.context.get("request").method
-
-    def validate_email(self, value):
-        """Валидация email"""
-
-        if self.get_method() == 'POST':
-            if self.get_user().role == User.Role.ADMIN:
-                if User.objects.filter(email=value).select_related():
-                    raise serializers.ValidationError(
-                        'Пользователь с таким email уже существует.'
-                    )
-        return value
-
-    def validate_username(self, value):
-        """Валидация username"""
-
-        if self.get_method() == 'POST':
-            if self.get_user().role == User.Role.ADMIN:
-                if User.objects.filter(username=value).select_related():
-                    raise serializers.ValidationError(
-                        'Пользователь с таким username уже существует.'
-                    )
-        return value
 
 
 class GenreSerializer(serializers.ModelSerializer):
