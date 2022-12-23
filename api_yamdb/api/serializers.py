@@ -6,6 +6,7 @@ from django.core.validators import RegexValidator
 from rest_framework import serializers
 
 # Yamdb
+from api.validators import UserEmailValidator, UserNameValidator
 from reviews.models import (
     Category,
     Comment,
@@ -32,7 +33,7 @@ class AuthSignupSerializer(serializers.Serializer):
         username = data['username']
 
         # Ограничение на api пользователя
-        if username == 'me':
+        if username.lower() == 'me':
             raise serializers.ValidationError(
                 "Нельзя создавать пользователя с именем 'me'"
             )
@@ -68,9 +69,12 @@ class AuthConfirmSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     """Класс сериализации модели User"""
 
-    email = serializers.EmailField(max_length=254)
+    email = serializers.EmailField(
+        max_length=254, validators=[UserEmailValidator()]
+    )
     username = serializers.CharField(
-        max_length=150, validators=[RegexValidator('^[\\w\\|@\\.]+$')]
+        max_length=150,
+        validators=[RegexValidator('^[\\w\\|@\\.]+$'), UserNameValidator()],
     )
     last_name = serializers.CharField(max_length=150, required=False)
     first_name = serializers.CharField(max_length=150, required=False)
@@ -86,41 +90,41 @@ class UserSerializer(serializers.ModelSerializer):
             'role',
         )
 
-    def get_user(self):
-        """Возвращает текущего пользователя"""
+    # def get_user(self):
+    #     """Возвращает текущего пользователя"""
 
-        user = None
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            user = request.user
-        return user
+    #     user = None
+    #     request = self.context.get("request")
+    #     if request and hasattr(request, "user"):
+    #         user = request.user
+    #     return user
 
-    def get_method(self):
-        """Возвращает текущий метод"""
+    # def get_method(self):
+    #     """Возвращает текущий метод"""
 
-        return self.context.get("request").method
+    #     return self.context.get("request").method
 
-    def validate_email(self, value):
-        """Валидация email"""
+    # def validate_email(self, value):
+    #     """Валидация email"""
 
-        if self.get_method() == 'POST':
-            if self.get_user().role == User.Role.ADMIN:
-                if User.objects.filter(email=value).select_related():
-                    raise serializers.ValidationError(
-                        'Пользователь с таким email уже существует.'
-                    )
-        return value
+    #     if self.get_method() == 'POST':
+    #         if self.get_user().role == User.Role.ADMIN:
+    #             if User.objects.filter(email=value).select_related():
+    #                 raise serializers.ValidationError(
+    #                     'Пользователь с таким email уже существует.'
+    #                 )
+    #     return value
 
-    def validate_username(self, value):
-        """Валидация username"""
+    # def validate_username(self, value):
+    #     """Валидация username"""
 
-        if self.get_method() == 'POST':
-            if self.get_user().role == User.Role.ADMIN:
-                if User.objects.filter(username=value).select_related():
-                    raise serializers.ValidationError(
-                        'Пользователь с таким username уже существует.'
-                    )
-        return value
+    #     if self.get_method() == 'POST':
+    #         if self.get_user().role == User.Role.ADMIN:
+    #             if User.objects.filter(username=value).select_related():
+    #                 raise serializers.ValidationError(
+    #                     'Пользователь с таким username уже существует.'
+    #                 )
+    #     return value
 
 
 class GenreSerializer(serializers.ModelSerializer):
