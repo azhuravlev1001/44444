@@ -29,7 +29,7 @@
 # Установка и настройки
 Клонировать репозитория
 ```
-git clone git@github.com:killjoynfk/api_yamdb.git
+git@github.com:azhuravlev1001/api_yamdb.git
 ```
 
 ## Cоздание и активация виртуального окружения:
