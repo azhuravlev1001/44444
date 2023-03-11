@@ -31,67 +31,35 @@
 ```
 git@github.com:azhuravlev1001/api_yamdb.git
 ```
-
 ## Cоздание и активация виртуального окружения:
-
 ```
 cd api_yamdb
-```
-
-```
 python -m venv env
-```
-
-```
 source venv/Source/Activate
 ```
-
 ## Установка зависимостей из файла requirements.txt:
-
 ```
 python -r requirements.txt
-```
-
-```
 pip install -r requirements.txt
 ```
-
 ## Выполнение миграций:
-
-```
-cd api_yamdb
-```
-
 ```
 python manage.py migrate
 ```
-
 ## Заполнение базы данных из CSV:
-
 ```
 python manage.py import_csv -f [FILE ...] -t [User, Category, Genre, Title, Review, Comment, TitleGenre]
 ```
 ## Запуск тестов:
-
 ```
 cd ..
-```
-
-```
 pytest
 ```
-
 ## Запуск проекта:
-
 ```
 cd api_yamdb
-```
-
-```
 python manage.py runserver
 ```
-
-
 # Документация:
 
 Документация по API доступна по следующему адресу (необходимо запустить сервер):
