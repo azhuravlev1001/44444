@@ -27,7 +27,7 @@
 - django-filter 22.1
 
 # Установка и настройки
-Клонировать репозитория
+Клонировать репозиторий
 ```
 git@github.com:azhuravlev1001/api_yamdb.git
 ```
